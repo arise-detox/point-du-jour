@@ -17,6 +17,7 @@ import xml.etree.ElementTree as ET
 from datetime import date, datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import requests
 
@@ -24,7 +25,7 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "data" / "data.json"
 HIST = ROOT / "data" / "history.json"
 TIMEOUT = 25
-HEADERS = {"User-Agent": "point-du-jour/1.0"}
+HEADERS = {"User-Agent": "point-du-jour/1.0 (https://github.com/arise-detox/point-du-jour)"}
 MODEL = os.getenv("CLAUDE_MODEL") or "claude-haiku-5-5"
 CURRENCIES = ["USD", "JPY", "THB", "GBP", "CHF"]
 OZ = 31.1034768  # grammes par once troy
@@ -246,6 +247,31 @@ def metals(rates, hist):
             "ag_usd_oz": xag, "ag_eur_g": xag / eurusd / OZ}
 
 
+# --- Anecdote du jour --------------------------------------------------------
+def anecdote():
+    """Événements marquants de ce jour (Wikipédia FR, « Ce jour-là ») ; un par jour est mis en avant."""
+    now = datetime.now(ZoneInfo("Europe/Paris"))
+    j = get("https://api.wikimedia.org/feed/v1/wikipedia/fr/onthisday/selected/"
+            f"{now.month:02d}/{now.day:02d}").json()
+    events = []
+    for e in j.get("selected", []):
+        text = (e.get("text") or "").strip()
+        if not text:
+            continue
+        pages = []
+        for p in (e.get("pages") or [])[:2]:
+            url = ((p.get("content_urls") or {}).get("desktop") or {}).get("page")
+            title = (p.get("titles") or {}).get("normalized") or p.get("title")
+            if url and title:
+                pages.append({"t": title, "u": url})
+        events.append({"y": e.get("year"), "t": text, "p": pages})
+    if not events:
+        raise RuntimeError("aucun événement pour ce jour")
+    events.sort(key=lambda x: x["y"] or 0, reverse=True)
+    return {"date": now.date().isoformat(), "events": events[:8],
+            "pick": now.timetuple().tm_yday % len(events[:8])}
+
+
 # --- Historique --------------------------------------------------------------
 def load_hist():
     try:
@@ -265,6 +291,7 @@ def main():
     data["unemployment"] = safe("chômage", unemployment)
     data["ecb"] = safe("taux BCE", ecb_rate)
     data["holidays"] = safe("jours fériés", holidays) or []
+    data["anecdote"] = safe("anecdote", anecdote)
 
     rates = safe("change", fx_raw)
     data["fx"] = safe("change", fx_block, rates) if rates else None
