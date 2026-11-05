@@ -617,17 +617,20 @@ details{margin-top:6px}summary{cursor:pointer;color:var(--acc);font-size:14px;pa
     if (state.busy) return;
     state.busy = true; state.warns = [];
     $("#btn-refresh").classList.add("spin");
-    resolveLocation().then(function (loc) {
+    /* actualités, marchés, économie : indépendants de la position, affichés sans attendre le GPS */
+    var common = [
+      track("data", loadData(), renderData, null),
+      track("btc", loadBtc(), function () { if (state.data) renderMoney(); })
+    ];
+    var local = resolveLocation().then(function (loc) {
       state.loc = loc; renderHeader();
-      var tasks = [
+      return Promise.all([
         track("weather", loadWeather(loc), renderWeather, "s-weather"),
         track("aq", loadAir(loc), function () { if (state.weather) renderWeather(); }),
-        track("stations", loadStations(loc), renderFuel, "s-fuel"),
-        track("data", loadData(), renderData, null),
-        track("btc", loadBtc(), function () { if (state.data) renderMoney(); })
-      ];
-      return Promise.all(tasks);
-    }).then(function () {
+        track("stations", loadStations(loc), renderFuel, "s-fuel")
+      ]);
+    });
+    Promise.all(common.concat([local])).then(function () {
       if (!state.data) { fail("s-money"); fail("s-economy"); fail("s-news"); }
       renderHighlights(); renderStatus();
       var g = state.data && state.data.data.generated;
