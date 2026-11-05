@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1120">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Point du jour">
+<title>Point du jour</title>
+<link rel="apple-touch-icon" id="touch-icon" href="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
+<style>
+:root{--bg:#f2f4f8;--card:#fff;--ink:#0f172a;--mut:#64748b;--line:#e4e8ef;--acc:#2563eb;--up:#15803d;--down:#dc2626;--chip:#eef2f7;--warn:#b45309}
+@media (prefers-color-scheme:dark){:root{--bg:#0b1120;--card:#141c2f;--ink:#e8edf6;--mut:#93a1b8;--line:#243049;--acc:#60a5fa;--up:#4ade80;--down:#f87171;--chip:#1c2740;--warn:#fbbf24}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;padding:env(safe-area-inset-top) env(safe-area-inset-right) calc(28px + env(safe-area-inset-bottom)) env(safe-area-inset-left)}
+.wrap{max-width:720px;margin:0 auto;padding:0 14px}
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;padding:18px 2px 8px}
+.date{color:var(--mut);font-size:13px;text-transform:capitalize}
+h1{margin:2px 0 6px;font-size:30px;letter-spacing:-.02em}
+.actions{display:flex;gap:8px}
+.ibtn{width:42px;height:42px;border-radius:13px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:19px;cursor:pointer}
+.ibtn.spin span{display:inline-block;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.chip{display:inline-block;border:0;border-radius:999px;background:var(--chip);color:var(--ink);padding:5px 11px;font-size:13px;cursor:pointer;font-family:inherit}
+.chip.on{background:var(--acc);color:#fff}
+.status{font-size:12px;color:var(--mut);padding:2px 2px 10px;min-height:18px}
+.status .w{color:var(--warn)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 14px 12px;margin:0 0 12px}
+.card h2{margin:0 0 10px;font-size:12.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.card h2 small{text-transform:none;letter-spacing:0;font-weight:400;font-size:12px}
+h3{margin:14px 0 8px;font-size:13px;color:var(--mut);font-weight:600}
+h3:first-child{margin-top:0}
+.muted{color:var(--mut)}.small{font-size:12.5px}
+p{margin:0 0 8px}
+a{color:var(--acc)}
+.hl{list-style:none;margin:0;padding:0}
+.hl li{display:flex;gap:10px;padding:7px 0;border-top:1px solid var(--line)}
+.hl li:first-child{border-top:0;padding-top:0}
+.hl .ic{width:24px;text-align:center;flex:none}
+.wnow{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.wicon{font-size:52px;line-height:1}
+.wtemp{font-size:44px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.alert{background:var(--chip);border-radius:12px;padding:8px 11px;font-size:14px;margin-bottom:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.tile{background:var(--chip);border-radius:12px;padding:8px 9px;min-width:0}
+.tile .k{font-size:11.5px;color:var(--mut)}
+.tile .v{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .s{font-size:11.5px;color:var(--mut)}
+.hours{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin:0 -4px 8px;-webkit-overflow-scrolling:touch}
+.hour{flex:none;width:52px;text-align:center;font-size:13px;padding:6px 0;border-radius:12px;background:var(--chip)}
+.hour .e{font-size:20px}.hour .p{font-size:11px;color:var(--acc);min-height:14px}
+.days .d{display:grid;grid-template-columns:46px 28px 1fr 44px;align-items:center;gap:8px;padding:5px 0;border-top:1px solid var(--line);font-size:14px}
+.days .d:first-child{border-top:0}
+.bar{position:relative;height:6px;border-radius:3px;background:var(--chip)}
+.bar i{position:absolute;top:0;bottom:0;border-radius:3px;background:linear-gradient(90deg,#38bdf8,#f59e0b)}
+.rng{display:flex;justify-content:space-between;font-size:12.5px;color:var(--mut);margin-top:2px}
+.pill{display:inline-block;border-radius:999px;padding:2px 9px;font-size:12.5px;background:var(--chip)}
+.aq0{background:#16a34a;color:#fff}.aq1{background:#65a30d;color:#fff}.aq2{background:#ca8a04;color:#fff}.aq3{background:#ea580c;color:#fff}.aq4{background:#dc2626;color:#fff}.aq5{background:#7f1d1d;color:#fff}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch}
+.chips .chip{flex:none;white-space:nowrap}
+.best{border:1px solid var(--line);border-radius:14px;padding:11px 12px;margin-bottom:8px}
+.best .lab{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em}
+.best .pr{font-size:26px;font-weight:700;letter-spacing:-.02em}
+.best .pr small{font-size:14px;font-weight:500;color:var(--mut)}
+.btn{display:inline-block;margin-top:6px;border-radius:10px;background:var(--acc);color:#fff;text-decoration:none;font-size:14px;padding:7px 13px}
+.row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--line);font-size:14px}
+.row:first-child{border-top:0}
+.row .r{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.fx{display:grid;grid-template-columns:1fr 84px auto;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.fx:first-of-type{border-top:0}
+.fx .n{font-weight:600}
+.fx .r{text-align:right;font-variant-numeric:tabular-nums}
+.spark{width:100%;height:34px;color:var(--acc);display:block}
+.bd{font-size:12.5px;font-variant-numeric:tabular-nums}
+.bd.up{color:var(--up)}.bd.down{color:var(--down)}.bd.flat{color:var(--mut)}
+.mk{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+details{margin-top:6px}summary{cursor:pointer;color:var(--acc);font-size:14px;padding:6px 0}
+.conv{display:flex;gap:8px;margin-top:6px}
+.conv input,.conv select,.set input,.set select{font:inherit;color:var(--ink);background:var(--chip);border:1px solid var(--line);border-radius:10px;padding:9px 10px;min-width:0}
+.conv input{flex:1}
+.cvout{margin-top:8px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.news a.it{display:block;text-decoration:none;color:var(--ink);padding:9px 0;border-top:1px solid var(--line)}
+.news a.it:first-of-type{border-top:0}
+.news .t{font-size:15px}.news .m{font-size:12px;color:var(--mut);margin-top:2px}
+.syn{margin:0 0 6px;padding-left:18px}.syn li{margin:0 0 6px;font-size:15px}
+.more{display:block;width:100%;margin-top:8px;border:0;border-radius:12px;background:var(--chip);color:var(--ink);padding:10px;font:inherit;cursor:pointer}
+.foot{font-size:12px;color:var(--mut);text-align:center;padding:6px 10px 0}
+.banner{background:var(--chip);border-radius:14px;padding:10px 12px;font-size:13.5px;margin-bottom:12px;display:flex;gap:10px;justify-content:space-between;align-items:center}
+.banner[hidden]{display:none}
+.banner button{border:0;background:none;color:var(--acc);font:inherit;cursor:pointer}
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;z-index:10}
+.modal[hidden]{display:none}
+.sheet{background:var(--card);width:100%;max-width:720px;max-height:88vh;overflow:auto;border-radius:20px 20px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom))}
+.sheet h2{margin:0 0 12px;font-size:20px;text-transform:none;letter-spacing:0;color:var(--ink)}
+.set label{display:block;font-size:13px;color:var(--mut);margin:12px 0 5px}
+.set input,.set select{width:100%}
+.res button{display:block;width:100%;text-align:left;border:0;background:var(--chip);color:var(--ink);font:inherit;padding:10px;border-radius:10px;margin-top:6px;cursor:pointer}
+.seg{display:flex;gap:6px}.seg .chip{flex:1;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="date" id="date"></div>
+      <h1 id="hello">Point du jour</h1>
+      <button class="chip" id="loc-chip" type="button">📍 Localisation…</button>
+    </div>
+    <div class="actions">
+      <button class="ibtn" id="btn-refresh" type="button" aria-label="Actualiser"><span>↻</span></button>
+      <button class="ibtn" id="btn-settings" type="button" aria-label="Réglages">⚙︎</button>
+    </div>
+  </header>
+  <div class="status" id="status"></div>
+  <div class="banner" id="install" hidden><span>Pour l'installer : touchez <b>Partager</b> puis <b>Sur l'écran d'accueil</b>.</span><button type="button" id="install-x">OK</button></div>
+
+  <section class="card" id="s-highlights"><h2>À retenir <small></small></h2><div class="body"><p class="muted">Chargement…</p></div></section>
+  <section class="card" id="s-weather"><h2>Météo <small></small></h2><div class="body"><p class="muted">Chargement…</p></div></section>
+  <section class="card" id="s-fuel"><h2>Carburant <small></small></h2><div class="body"><p class="muted">Chargement…</p></div></section>
+  <section class="card" id="s-money"><h2>Devises, or &amp; marchés <small></small></h2><div class="body"><p class="muted">Chargement…</p></div></section>
+  <section class="card" id="s-economy"><h2>Économie en France <small></small></h2><div class="body"><p class="muted">Chargement…</p></div></section>
+  <section class="card news" id="s-news"><h2>Actualités <small></small></h2><div class="body"><p class="muted">Chargement…</p></div></section>
+  <div class="foot" id="foot"></div>
+</div>
+
+<div class="modal" id="modal" hidden>
+  <div class="sheet set">
+    <h2>Réglages</h2>
+    <label>Position</label>
+    <div class="seg"><button class="chip" type="button" id="m-gps">📍 Ma position (GPS)</button><button class="chip" type="button" id="m-city">🏙️ Ville fixe</button></div>
+    <div id="city-box" hidden>
+      <label for="city-q">Rechercher une commune</label>
+      <input id="city-q" type="search" placeholder="Ex. Lyon, Strasbourg…" autocomplete="off">
+      <div class="res" id="city-res"></div>
+    </div>
+    <label for="set-fuel">Carburant</label>
+    <select id="set-fuel"><option>SP95</option><option>E10</option><option>SP98</option><option>Gazole</option><option>GPL</option><option>E85</option></select>
+    <label for="set-radius">Rayon de recherche des stations</label>
+    <select id="set-radius"><option value="3">3 km</option><option value="5">5 km</option><option value="10">10 km</option><option value="20">20 km</option><option value="30">30 km</option></select>
+    <p class="small muted" style="margin-top:14px">Vos réglages et votre position restent sur ce téléphone. Rien n'est envoyé à un serveur de l'application.</p>
+    <button class="more" type="button" id="m-close">Terminer</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- utilitaires ---------- */
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var ESC = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return ESC[c]; }); }
+  var nfCache = {};
+  function num(n, d) {
+    if (!nfCache[d]) nfCache[d] = new Intl.NumberFormat("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d });
+    return nfCache[d].format(n);
+  }
+  function pct(n, d) { return (n > 0 ? "+" : n < 0 ? "−" : "") + num(Math.abs(n), d == null ? 2 : d) + " %"; }
+  function eur(n, d) { return num(n, d == null ? 2 : d) + " €"; }
+  function chg(last, prev) { return prev ? (last / prev - 1) * 100 : 0; }
+  function badge(v) {
+    var c = v > 0.004 ? "up" : v < -0.004 ? "down" : "flat";
+    return '<span class="bd ' + c + '">' + (v > 0.004 ? "▲ " : v < -0.004 ? "▼ " : "") + pct(v) + "</span>";
+  }
+  function ago(ms) {
+    var m = Math.max(0, Math.round((Date.now() - ms) / 60000));
+    if (m < 1) return "à l'instant";
+    if (m < 60) return "il y a " + m + " min";
+    if (m < 1440) return "il y a " + Math.round(m / 60) + " h";
+    return "il y a " + Math.round(m / 1440) + " j";
+  }
+  function spark(series) {
+    if (!series || series.length < 2) return "";
+    var w = 100, h = 34, min = Math.min.apply(null, series), max = Math.max.apply(null, series);
+    var span = max - min || 1, step = w / (series.length - 1);
+    var pts = series.map(function (v, i) {
+      return (i * step).toFixed(1) + "," + (h - 3 - ((v - min) / span) * (h - 6)).toFixed(1);
+    });
+    return '<svg class="spark" viewBox="0 0 ' + w + " " + h + '" preserveAspectRatio="none" aria-hidden="true"><polyline points="' +
+      pts.join(" ") + '" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';
+  }
+  function km(lat1, lon1, lat2, lon2) {
+    var r = Math.PI / 180, dp = (lat2 - lat1) * r, dl = (lon2 - lon1) * r;
+    var a = Math.sin(dp / 2) * Math.sin(dp / 2) + Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.sin(dl / 2) * Math.sin(dl / 2);
+    return 6371 * 2 * Math.asin(Math.sqrt(a));
+  }
+  function box(id) { return $("#" + id + " .body"); }
+  function sub(id, text) { var s = $("#" + id + " h2 small"); if (s) s.textContent = text || ""; }
+  function fail(id) { box(id).innerHTML = '<p class="muted">Indisponible pour le moment.</p>'; }
+  function monthLabel(p) {
+    var a = String(p).split("-");
+    return new Date(Number(a[0]), Number(a[1]) - 1, 1).toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+  }
+
+  /* ---------- réglages et cache (sur le téléphone uniquement) ---------- */
+  var DEFAULTS = { fuel: "SP95", radius: 10, loc: null, last: null, hideInstall: false };
+  function loadSettings() {
+    try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem("pdj.settings") || "{}")); }
+    catch (e) { return Object.assign({}, DEFAULTS); }
+  }
+  function saveSettings() { try { localStorage.setItem("pdj.settings", JSON.stringify(S)); } catch (e) {} }
+  function cacheGet(k) { try { return JSON.parse(localStorage.getItem("pdj.c." + k)); } catch (e) { return null; } }
+  function cacheSet(k, d) { try { localStorage.setItem("pdj.c." + k, JSON.stringify({ t: Date.now(), d: d })); } catch (e) {} }
+  function fetchJSON(url, opts) {
+    return fetch(url, opts).then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    });
+  }
+  function withCache(key, fn) {
+    return fn().then(function (d) { cacheSet(key, d); return { data: d, stale: false, t: Date.now() }; })
+      .catch(function (e) {
+        var c = cacheGet(key);
+        if (c) return { data: c.d, stale: true, t: c.t };
+        throw e;
+      });
+  }
+
+  var S = loadSettings();
+  var state = { loc: null, weather: null, aq: null, stations: null, data: null, btc: null, warns: [], rainMsg: "", fuelBest: null, newsCat: "Tout", newsMax: 12, busy: false, last: 0 };
+
+  var FUELS = {
+    SP95: { f: "sp95_prix", m: "sp95_maj" }, E10: { f: "e10_prix", m: "e10_maj" },
+    SP98: { f: "sp98_prix", m: "sp98_maj" }, Gazole: { f: "gazole_prix", m: "gazole_maj" },
+    GPL: { f: "gplc_prix", m: "gplc_maj" }, E85: { f: "e85_prix", m: "e85_maj" }
+  };
+  var CUR = {
+    USD: { n: "Dollar", s: "$", dec: 4, flag: "🇺🇸", unit: 1 },
+    JPY: { n: "Yen", s: "¥", dec: 2, flag: "🇯🇵", unit: 100 },
+    THB: { n: "Baht", s: "฿", dec: 2, flag: "🇹🇭", unit: 100 },
+    GBP: { n: "Livre sterling", s: "£", dec: 4, flag: "🇬🇧", unit: 1 },
+    CHF: { n: "Franc suisse", s: "CHF", dec: 4, flag: "🇨🇭", unit: 1 }
+  };
+  var WMO = {
+    0: ["☀️", "Ciel dégagé", "🌙"], 1: ["🌤️", "Plutôt dégagé", "🌙"], 2: ["⛅", "Partiellement nuageux", "☁️"], 3: ["☁️", "Couvert"],
+    45: ["🌫️", "Brouillard"], 48: ["🌫️", "Brouillard givrant"], 51: ["🌦️", "Bruine légère"], 53: ["🌦️", "Bruine"], 55: ["🌧️", "Bruine dense"],
+    56: ["🌧️", "Bruine verglaçante"], 57: ["🌧️", "Bruine verglaçante"], 61: ["🌧️", "Pluie faible"], 63: ["🌧️", "Pluie"], 65: ["🌧️", "Pluie forte"],
+    66: ["🌧️", "Pluie verglaçante"], 67: ["🌧️", "Pluie verglaçante"], 71: ["🌨️", "Neige faible"], 73: ["🌨️", "Neige"], 75: ["❄️", "Forte neige"],
+    77: ["🌨️", "Grains de neige"], 80: ["🌦️", "Averses"], 81: ["🌧️", "Averses fortes"], 82: ["⛈️", "Averses violentes"],
+    85: ["🌨️", "Averses de neige"], 86: ["🌨️", "Fortes averses de neige"], 95: ["⛈️", "Orage"], 96: ["⛈️", "Orage et grêle"], 99: ["⛈️", "Orage violent"]
+  };
+  function wmo(code, isDay) {
+    var w = WMO[code] || ["🌡️", "Variable"], icon = w[0];
+    if (isDay === 0 && w[2]) icon = w[2];
+    return [icon, w[1]];
+  }
+  function uvLabel(u) { return u < 3 ? "faible" : u < 6 ? "modéré" : u < 8 ? "élevé" : u < 11 ? "très élevé" : "extrême"; }
+  function aqLabel(a) {
+    if (a <= 20) return [0, "Bon"]; if (a <= 40) return [1, "Correct"]; if (a <= 60) return [2, "Moyen"];
+    if (a <= 80) return [3, "Médiocre"]; if (a <= 100) return [4, "Mauvais"]; return [5, "Très mauvais"];
+  }
+
+  /* ---------- localisation ---------- */
+  function getPosition() {
+    return new Promise(function (res, rej) {
+      if (!navigator.geolocation) return rej(new Error("pas de géolocalisation"));
+      navigator.geolocation.getCurrentPosition(
+        function (p) { res({ lat: p.coords.latitude, lon: p.coords.longitude }); },
+        rej, { enableHighAccuracy: false, timeout: 12000, maximumAge: 600000 });
+    });
+  }
+  function communeName(lat, lon) {
+    var req = fetchJSON("https://geo.api.gouv.fr/communes?lat=" + lat.toFixed(5) + "&lon=" + lon.toFixed(5) + "&fields=nom&limit=1")
+      .then(function (a) { return a && a[0] ? a[0].nom : null; }).catch(function () { return null; });
+    var timeout = new Promise(function (r) { setTimeout(function () { r(null); }, 4000); });
+    return Promise.race([req, timeout]);
+  }
+  function resolveLocation() {
+    if (S.loc && S.loc.mode === "city") return Promise.resolve(S.loc);
+    return getPosition().then(function (p) {
+      return communeName(p.lat, p.lon).then(function (name) {
+        S.last = { lat: p.lat, lon: p.lon, name: name || (S.last && S.last.name) || "Ma position" };
+        saveSettings();
+        return { mode: "gps", lat: p.lat, lon: p.lon, name: S.last.name };
+      });
+    }).catch(function () {
+      if (S.last) {
+        state.warns.push("Position indisponible : dernière position connue utilisée.");
+        return { mode: "gps", lat: S.last.lat, lon: S.last.lon, name: S.last.name };
+      }
+      state.warns.push("Position indisponible : autorisez la localisation ou choisissez une ville dans les réglages (⚙︎).");
+      return { mode: "fallback", lat: 48.8566, lon: 2.3522, name: "Paris" };
+    });
+  }
+  function lkey(loc) { return loc.lat.toFixed(2) + "," + loc.lon.toFixed(2); }
+
+  /* ---------- chargement des données ---------- */
+  function loadWeather(loc) {
+    var u = "https://api.open-meteo.com/v1/forecast?latitude=" + loc.lat.toFixed(4) + "&longitude=" + loc.lon.toFixed(4) +
+      "&current=temperature_2m,apparent_temperature,relative_humidity_2m,is_day,precipitation,weather_code,wind_speed_10m,wind_gusts_10m" +
+      "&hourly=temperature_2m,precipitation_probability,weather_code,is_day" +
+      "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,sunrise,sunset,uv_index_max,wind_speed_10m_max" +
+      "&timezone=auto&forecast_days=7&wind_speed_unit=kmh";
+    return withCache("weather:" + lkey(loc), function () { return fetchJSON(u); });
+  }
+  function loadAir(loc) {
+    var u = "https://air-quality-api.open-meteo.com/v1/air-quality?latitude=" + loc.lat.toFixed(4) + "&longitude=" + loc.lon.toFixed(4) +
+      "&current=european_aqi,pm2_5,pm10,ozone,alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen&timezone=auto";
+    return withCache("air:" + lkey(loc), function () { return fetchJSON(u); });
+  }
+  function loadStations(loc) {
+    var base = "https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records";
+    var where = "within_distance(geom, geom'POINT(" + loc.lon.toFixed(5) + " " + loc.lat.toFixed(5) + ")', " + S.radius + "km)";
+    function page(off) { return fetchJSON(base + "?where=" + encodeURIComponent(where) + "&limit=100&offset=" + off); }
+    return withCache("fuel:" + lkey(loc) + ":" + S.radius, function () {
+      return page(0).then(function (first) {
+        var all = first.results || [], total = first.total_count || all.length, more = [];
+        for (var o = 100; o < Math.min(total, 400); o += 100) more.push(page(o));
+        return Promise.all(more).then(function (rest) {
+          rest.forEach(function (r) { all = all.concat(r.results || []); });
+          return normStations(all, loc);
+        });
+      });
+    });
+  }
+  function normStations(recs, loc) {
+    var out = [];
+    recs.forEach(function (r) {
+      var g = r.geom;
+      if (!g || typeof g.lat !== "number") return;
+      var p = {}, m = {}, any = false;
+      Object.keys(FUELS).forEach(function (k) {
+        var v = r[FUELS[k].f];
+        if (v != null && !isNaN(Number(v))) { p[k] = Number(v); m[k] = r[FUELS[k].m] || null; any = true; }
+      });
+      if (!any) return;
+      out.push({ lat: g.lat, lon: g.lon, adr: r.adresse || "", ville: r.ville || "", cp: r.cp || "", p: p, m: m, d: km(loc.lat, loc.lon, g.lat, g.lon) });
+    });
+    return out;
+  }
+  function loadData() { return withCache("data", function () { return fetchJSON("data/data.json", { cache: "no-cache" }); }); }
+  function loadBtc() {
+    return withCache("btc", function () {
+      return fetchJSON("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur&include_24hr_change=true")
+        .then(function (j) { return { eur: j.bitcoin.eur, chg: j.bitcoin.eur_24h_change }; });
+    });
+  }
+
+  /* ---------- rendu : météo ---------- */
+  function renderWeather() {
+    var wr = state.weather;
+    if (!wr) return fail("s-weather");
+    var w = wr.data, c = w.current, d = w.daily, h = w.hourly, html = "";
+    var wc = wmo(c.weather_code, c.is_day);
+    html += '<div class="wnow"><div class="wicon">' + wc[0] + '</div><div><div class="wtemp">' + Math.round(c.temperature_2m) + '°</div><div class="muted">' +
+      esc(wc[1]) + " · ressenti " + Math.round(c.apparent_temperature) + "°</div></div></div>";
+
+    var start = 0, nowH = String(c.time).slice(0, 13) + ":00";
+    for (var i = 0; i < h.time.length; i++) { if (h.time[i] >= nowH) { start = i; break; } }
+    var rain = "";
+    for (var j = start; j < Math.min(start + 12, h.time.length); j++) {
+      if ((h.precipitation_probability[j] || 0) >= 50) { rain = "Pluie probable vers " + h.time[j].slice(11, 13) + " h (" + h.precipitation_probability[j] + " %)."; break; }
+    }
+    state.rainMsg = rain || "Pas de pluie significative dans les 12 prochaines heures.";
+    html += '<div class="alert">' + (rain ? "☔ " : "✅ ") + esc(state.rainMsg) + "</div>";
+
+    var uv = d.uv_index_max[0] || 0, sum = d.precipitation_sum[0] || 0;
+    html += '<div class="grid3">' +
+      tile("🌡️ Min / Max", Math.round(d.temperature_2m_min[0]) + "° / " + Math.round(d.temperature_2m_max[0]) + "°", "") +
+      tile("🌧️ Pluie", (d.precipitation_probability_max[0] || 0) + " %", sum > 0 ? num(sum, 1) + " mm" : "aucune prévue") +
+      tile("💨 Vent", Math.round(c.wind_speed_10m) + " km/h", "rafales " + Math.round(c.wind_gusts_10m)) +
+      tile("💧 Humidité", c.relative_humidity_2m + " %", "") +
+      tile("🕶️ UV max", num(uv, 1), uvLabel(uv)) +
+      tile("🌅 Soleil", hmm(d.sunrise[0]) + " – " + hmm(d.sunset[0]), "") + "</div>";
+
+    html += '<h3>Prochaines heures</h3><div class="hours">';
+    for (var k = start; k < Math.min(start + 24, h.time.length); k++) {
+      var hw = wmo(h.weather_code[k], h.is_day[k]);
+      html += '<div class="hour"><div>' + h.time[k].slice(11, 13) + 'h</div><div class="e">' + hw[0] + "</div><div>" + Math.round(h.temperature_2m[k]) + '°</div><div class="p">' +
+        ((h.precipitation_probability[k] || 0) >= 20 ? h.precipitation_probability[k] + "%" : "") + "</div></div>";
+    }
+    html += "</div>";
+
+    var gmin = Math.min.apply(null, d.temperature_2m_min), gmax = Math.max.apply(null, d.temperature_2m_max), gs = gmax - gmin || 1;
+    html += '<h3>7 jours</h3><div class="days">';
+    for (var n = 0; n < d.time.length; n++) {
+      var dw = wmo(d.weather_code[n], 1), left = ((d.temperature_2m_min[n] - gmin) / gs) * 100, wid = ((d.temperature_2m_max[n] - d.temperature_2m_min[n]) / gs) * 100;
+      html += '<div class="d"><span>' + dayShort(d.time[n], n) + "</span><span>" + dw[0] + '</span><div><div class="bar"><i style="left:' + left.toFixed(0) + "%;width:" + Math.max(wid, 6).toFixed(0) + '%"></i></div>' +
+        '<div class="rng"><span>' + Math.round(d.temperature_2m_min[n]) + "°</span><span>" + Math.round(d.temperature_2m_max[n]) + '°</span></div></div><span class="muted small">' +
+        ((d.precipitation_probability_max[n] || 0) >= 20 ? "💧" + d.precipitation_probability_max[n] + "%" : "") + "</span></div>";
+    }
+    html += "</div>";
+
+    var ar = state.aq && state.aq.data && state.aq.data.current;
+    if (ar && ar.european_aqi != null) {
+      var al = aqLabel(ar.european_aqi);
+      html += '<h3>Air et pollens</h3><p><span class="pill aq' + al[0] + '">' + al[1] + "</span> indice européen " + Math.round(ar.european_aqi) +
+        (ar.pm2_5 != null ? " · PM2,5 " + num(ar.pm2_5, 0) + " µg/m³" : "") + "</p>";
+      var pol = [["alder_pollen", "aulne"], ["birch_pollen", "bouleau"], ["grass_pollen", "graminées"], ["mugwort_pollen", "armoise"], ["olive_pollen", "olivier"], ["ragweed_pollen", "ambroisie"]]
+        .filter(function (x) { return ar[x[0]] != null && ar[x[0]] >= 1; })
+        .map(function (x) { return x[1] + " " + num(ar[x[0]], 0); });
+      html += '<p class="small muted">' + (pol.length ? "Pollens (grains/m³) : " + esc(pol.join(", ")) : "Pollens : aucun niveau significatif.") + "</p>";
+    }
+    html += '<p class="small muted">Prévisions Open-Meteo · <a href="https://vigilance.meteofrance.fr" target="_blank" rel="noopener">Vigilance Météo-France</a></p>';
+    box("s-weather").innerHTML = html;
+    sub("s-weather", wr.stale ? "hors ligne · " + ago(wr.t) : "");
+  }
+  function tile(k, v, s) { return '<div class="tile"><div class="k">' + k + '</div><div class="v">' + esc(v) + '</div><div class="s">' + esc(s) + "</div></div>"; }
+  function hmm(iso) { return iso ? String(iso).slice(11, 16) : ""; }
+  function dayShort(iso, i) {
+    if (i === 0) return "Auj."; if (i === 1) return "Dem.";
+    return new Date(iso + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "short" });
+  }
+
+  /* ---------- rendu : carburant ---------- */
+  function ageOf(iso) { var t = iso ? Date.parse(iso) : NaN; return isNaN(t) ? null : t; }
+  function renderFuel() {
+    var sr = state.stations;
+    if (!sr) return fail("s-fuel");
+    var st = sr.data, fuel = S.fuel, html = "";
+    html += '<div class="chips">';
+    Object.keys(FUELS).forEach(function (k) {
+      var ps = st.filter(function (s) { return s.p[k] != null; }).map(function (s) { return s.p[k]; });
+      if (!ps.length) return;
+      html += '<button type="button" class="chip' + (k === fuel ? " on" : "") + '" data-fuel="' + k + '">' + k + " " + num(Math.min.apply(null, ps), 3) + "</button>";
+    });
+    html += "</div>";
+    var cand = st.filter(function (s) { return s.p[fuel] != null; });
+    state.fuelBest = null;
+    if (!cand.length) {
+      html += '<p class="muted">Aucune station proposant du ' + esc(fuel) + " dans " + S.radius + " km. Augmentez le rayon dans les réglages (⚙︎).</p>";
+    } else {
+      var cheap = cand.slice().sort(function (a, b) { return a.p[fuel] - b.p[fuel] || a.d - b.d; });
+      var near = cand.slice().sort(function (a, b) { return a.d - b.d; })[0];
+      var best = cheap[0], saving = (near.p[fuel] - best.p[fuel]) * 50;
+      state.fuelBest = { fuel: fuel, best: best, near: near, saving: saving };
+      html += stationBox("La moins chère", best, fuel, true);
+      if (near !== best) {
+        html += stationBox("La plus proche", near, fuel, false);
+        if (saving >= 0.5) html += '<p class="small">💶 Plein de 50 L : <b>' + eur(saving, 2) + "</b> d'économie à la station la moins chère (" + num(best.d, 1) + " km contre " + num(near.d, 1) + " km).</p>";
+      }
+      var others = cheap.filter(function (s) { return s !== best && s !== near; }).slice(0, 4);
+      if (others.length) {
+        html += "<h3>Autres stations</h3>";
+        others.forEach(function (s) {
+          html += '<div class="row"><span>' + esc(s.ville) + ' <span class="muted small">' + esc(s.adr) + '</span></span><span class="r"><b>' + num(s.p[fuel], 3) + "</b> · " + num(s.d, 1) + " km</span></div>";
+        });
+      }
+    }
+    html += '<p class="small muted" style="margin-top:8px">Prix déclarés par les stations (data.economie.gouv.fr), rayon ' + S.radius + " km.</p>";
+    box("s-fuel").innerHTML = html;
+    sub("s-fuel", sr.stale ? "hors ligne · " + ago(sr.t) : "");
+  }
+  function stationBox(label, s, fuel, primary) {
+    var t = ageOf(s.m[fuel]), old = t && Date.now() - t > 72 * 3600 * 1000;
+    return '<div class="best"><div class="lab">' + label + '</div><div class="pr">' + num(s.p[fuel], 3) + " <small>€/L " + esc(fuel) + "</small></div><div>" +
+      esc(s.adr) + ", " + esc(s.cp) + " " + esc(s.ville) + '</div><div class="small muted">à ' + num(s.d, 1) + " km" +
+      (t ? " · prix " + (old ? "⚠ ancien, " : "") + ago(t) : "") + '</div><a class="btn" target="_blank" rel="noopener" href="https://maps.apple.com/?daddr=' +
+      s.lat.toFixed(5) + "," + s.lon.toFixed(5) + '&dirflg=d">Itinéraire</a></div>';
+  }
+
+  /* ---------- rendu : argent ---------- */
+  function renderMoney() {
+    var dr = state.data;
+    if (!dr) return fail("s-money");
+    var d = dr.data, html = "", fx = d.fx;
+    if (fx && fx.rates) {
+      html += "<h3>Devises (taux BCE du " + esc(new Date(fx.date + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long" })) + ")</h3>";
+      var main = ["USD", "JPY", "THB"], other = ["GBP", "CHF"];
+      html += main.map(function (k) { return fxRow(k, fx.rates[k]); }).join("");
+      var r = fx.rates;
+      if (r.USD && r.JPY && r.THB) {
+        html += '<p class="small muted" style="margin-top:6px">1 $ = ' + num(r.JPY.last / r.USD.last, 2) + " ¥ · " + num(r.THB.last / r.USD.last, 2) + " ฿ · ▲ = l'euro gagne en valeur</p>";
+      }
+      html += "<details><summary>Autres devises</summary>" + other.map(function (k) { return fxRow(k, fx.rates[k]); }).join("") + "</details>";
+      html += '<h3>Convertisseur</h3><div class="conv"><input id="cv-amt" type="number" inputmode="decimal" value="100" aria-label="Montant"><select id="cv-cur" aria-label="Devise">' +
+        '<option value="EUR">€ Euro</option><option value="USD">$ Dollar</option><option value="JPY">¥ Yen</option><option value="THB">฿ Baht</option></select></div><div class="cvout" id="cv-out"></div>';
+    }
+    var g = d.gold;
+    if (g && g.series && g.series.length >= 2) {
+      var gc = chg(g.series[g.series.length - 1], g.series[g.series.length - 2]);
+      html += '<h3>Or &amp; argent</h3><div class="fx"><div><div class="n">🥇 Or</div><div class="small muted">1 once = ' + eur(g.eur_oz, 0) + " (" + num(g.usd_oz, 0) + ' $)</div></div><div>' + spark(g.series) +
+        '</div><div class="r"><b>' + eur(g.eur_g, 2) + "/g</b><br>" + badge(gc) + "</div></div>";
+      if (g.ag_eur_g) html += '<p class="small muted">🥈 Argent : ' + eur(g.ag_eur_g, 2) + "/g · " + num(g.ag_usd_oz, 2) + " $/once</p>";
+    } else if (g) {
+      html += '<h3>Or</h3><p>' + eur(g.eur_g, 2) + "/g (" + eur(g.eur_oz, 0) + "/once)</p>";
+    }
+    var m = d.markets || {}, tiles = "";
+    if (m.cac) tiles += mk("CAC 40", num(m.cac.last, 0), chg(m.cac.last, m.cac.prev));
+    if (m.brent) tiles += mk("Brent", num(m.brent.last, 2) + " $", chg(m.brent.last, m.brent.prev));
+    if (state.btc) tiles += mk("Bitcoin", eur(state.btc.data.eur, 0), state.btc.data.chg || 0);
+    if (tiles) html += '<h3>Marchés</h3><div class="mk">' + tiles + "</div>";
+    box("s-money").innerHTML = html || '<p class="muted">Indisponible pour le moment.</p>';
+    sub("s-money", dr.stale ? "hors ligne · " + ago(dr.t) : "");
+    var amt = $("#cv-amt"), cur = $("#cv-cur");
+    if (amt && cur) { amt.addEventListener("input", convert); cur.addEventListener("change", convert); convert(); }
+  }
+  function mk(k, v, c) { return '<div class="tile"><div class="k">' + k + '</div><div class="v">' + v + '</div><div class="s">' + badge(c) + "</div></div>"; }
+  function fxRow(k, o) {
+    if (!o) return "";
+    var c = CUR[k], one = c.unit / o.last;
+    return '<div class="fx"><div><div class="n">' + c.flag + " " + c.n + '</div><div class="small muted">' + c.unit + " " + c.s + " = " + num(one, one < 1 ? 3 : 2) + " €</div></div><div>" + spark(o.series) +
+      '</div><div class="r"><b>1 € = ' + num(o.last, c.dec) + " " + c.s + "</b><br>" + badge(chg(o.last, o.prev)) + "</div></div>";
+  }
+  function convert() {
+    var fx = state.data && state.data.data.fx;
+    if (!fx) return;
+    var amt = parseFloat(String($("#cv-amt").value).replace(",", ".")), from = $("#cv-cur").value, out = $("#cv-out");
+    if (isNaN(amt)) { out.innerHTML = ""; return; }
+    var rate = function (c) { return c === "EUR" ? 1 : fx.rates[c] && fx.rates[c].last; };
+    if (!rate(from)) return;
+    var inEur = amt / rate(from), html = "";
+    ["EUR", "USD", "JPY", "THB"].forEach(function (c) {
+      if (c === from || !rate(c)) return;
+      var sym = c === "EUR" ? "€" : CUR[c].s, v = inEur * rate(c);
+      html += '<div class="tile"><div class="k">' + c + '</div><div class="v">' + num(v, v < 100 ? 2 : 0) + " " + sym + "</div></div>";
+    });
+    out.innerHTML = html;
+  }
+
+  /* ---------- rendu : économie ---------- */
+  function renderEconomy() {
+    var dr = state.data;
+    if (!dr) return fail("s-economy");
+    var d = dr.data, html = "", t = "";
+    if (d.inflation) t += tile("📈 Inflation", num(d.inflation.value, 1) + " %", "sur 1 an · " + monthLabel(d.inflation.period) + (d.inflation.previous != null ? " (avant : " + num(d.inflation.previous, 1) + " %)" : ""));
+    if (d.unemployment) t += tile("👷 Chômage", num(d.unemployment.value, 1) + " %", monthLabel(d.unemployment.period) + (d.unemployment.previous != null ? " (avant : " + num(d.unemployment.previous, 1) + " %)" : ""));
+    if (d.ecb) t += tile("🏦 Taux BCE", num(d.ecb.value, 2) + " %", "taux de dépôt");
+    if (t) html += '<div class="grid3">' + t + "</div>";
+    if (d.holidays && d.holidays.length) {
+      html += "<h3>Prochains jours fériés</h3>";
+      d.holidays.slice(0, 3).forEach(function (h) {
+        var dt = new Date(h.date + "T12:00:00"), days = Math.round((dt - new Date(new Date().toDateString())) / 86400000);
+        html += '<div class="row"><span>' + esc(h.name) + '</span><span class="r">' + esc(dt.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" })) +
+          ' <span class="muted">· ' + (days <= 0 ? "aujourd'hui" : days === 1 ? "demain" : "dans " + days + " j") + "</span></span></div>";
+      });
+    }
+    html += '<p class="small muted" style="margin-top:8px">Sources : Eurostat (IPCH, chômage harmonisé), BCE, calendrier.api.gouv.fr. L\'inflation IPCH diffère légèrement de l\'indice INSEE.</p>';
+    box("s-economy").innerHTML = html;
+  }
+
+  /* ---------- rendu : actualités ---------- */
+  function renderNews() {
+    var dr = state.data;
+    if (!dr) return fail("s-news");
+    var d = dr.data, items = d.news || [], html = "";
+    if (d.synthese && d.synthese.length) {
+      html += '<h3>L\'essentiel</h3><ul class="syn">' + d.synthese.map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("") + "</ul>";
+    }
+    var cats = ["Tout", "Une", "Monde", "Éco"];
+    html += '<div class="chips">' + cats.map(function (c) { return '<button type="button" class="chip' + (c === state.newsCat ? " on" : "") + '" data-cat="' + c + '">' + c + "</button>"; }).join("") + "</div>";
+    var list = items.filter(function (i) { return state.newsCat === "Tout" || i.c === state.newsCat; });
+    list.slice(0, state.newsMax).forEach(function (i) {
+      var t = i.ts ? Date.parse(i.ts) : NaN;
+      html += '<a class="it" target="_blank" rel="noopener" href="' + esc(i.u) + '"><div class="t">' + esc(i.t) + '</div><div class="m">' + esc(i.s) + " · " + esc(i.c) + (isNaN(t) ? "" : " · " + ago(t)) + "</div></a>";
+    });
+    if (!list.length) html += '<p class="muted">Aucun article pour le moment.</p>';
+    if (list.length > state.newsMax) html += '<button type="button" class="more" id="news-more">Voir plus (' + (list.length - state.newsMax) + ")</button>";
+    box("s-news").innerHTML = html;
+    sub("s-news", d.generated ? "mis à jour " + ago(Date.parse(d.generated)) : "");
+  }
+
+  /* ---------- rendu : à retenir ---------- */
+  function renderHighlights() {
+    var it = [], w = state.weather && state.weather.data, d = state.data && state.data.data;
+    if (w) {
+      var dd = w.daily, wc = wmo(dd.weather_code[0], 1);
+      it.push(["🌡️", "Aujourd'hui " + Math.round(dd.temperature_2m_min[0]) + "° à " + Math.round(dd.temperature_2m_max[0]) + "°, " + wc[1].toLowerCase() + ". " + state.rainMsg]);
+      if ((dd.uv_index_max[0] || 0) >= 6) it.push(["🕶️", "UV " + uvLabel(dd.uv_index_max[0]) + " (" + num(dd.uv_index_max[0], 0) + ") : protection solaire conseillée."]);
+      if (dd.wind_speed_10m_max[0] >= 50) it.push(["💨", "Vent fort attendu : jusqu'à " + Math.round(dd.wind_speed_10m_max[0]) + " km/h."]);
+    }
+    var ar = state.aq && state.aq.data && state.aq.data.current;
+    if (ar && ar.european_aqi >= 60) it.push(["😷", "Qualité de l'air " + aqLabel(ar.european_aqi)[1].toLowerCase() + " (indice " + Math.round(ar.european_aqi) + ")."]);
+    var fb = state.fuelBest;
+    if (fb) {
+      it.push(["⛽", fb.fuel + " à " + num(fb.best.p[fb.fuel], 3) + " €/L à " + fb.best.ville + " (" + num(fb.best.d, 1) + " km)" +
+        (fb.saving >= 1 ? " : " + eur(fb.saving, 0) + " d'économie sur un plein de 50 L." : ".")]);
+    }
+    if (d && d.fx && d.fx.rates) {
+      var r = d.fx.rates, moves = [];
+      ["USD", "JPY", "THB"].forEach(function (k) { if (r[k]) { var c = chg(r[k].last, r[k].prev); if (Math.abs(c) >= 0.4) moves.push(CUR[k].n + " " + pct(c, 1)); } });
+      var line = "1 € = " + (r.USD ? num(r.USD.last, 3) + " $" : "") + (r.JPY ? " · " + num(r.JPY.last, 1) + " ¥" : "") + (r.THB ? " · " + num(r.THB.last, 1) + " ฿" : "");
+      it.push(["💱", (moves.length ? "Euro vs " + moves.join(", ") + " (veille). " : "Devises stables. ") + line]);
+    }
+    if (d && d.gold && d.gold.series && d.gold.series.length >= 2) {
+      var s = d.gold.series, gc = chg(s[s.length - 1], s[s.length - 2]);
+      it.push(["🥇", "Or : " + eur(d.gold.eur_g, 2) + "/g (" + pct(gc, 1) + ")."]);
+    }
+    if (d && d.holidays && d.holidays.length) {
+      var h = d.holidays[0], days = Math.round((new Date(h.date + "T12:00:00") - new Date(new Date().toDateString())) / 86400000);
+      if (days >= 0 && days <= 7) it.push(["📅", h.name + (days === 0 ? " aujourd'hui." : days === 1 ? " demain." : " dans " + days + " jours.")]);
+    }
+    if (d && d.synthese && d.synthese.length) it.push(["📰", d.synthese[0]]);
+    box("s-highlights").innerHTML = it.length ? '<ul class="hl">' + it.map(function (x) { return '<li><span class="ic">' + x[0] + "</span><span>" + esc(x[1]) + "</span></li>"; }).join("") + "</ul>" : '<p class="muted">Aucune donnée disponible pour le moment.</p>';
+  }
+
+  /* ---------- statut, en-tête ---------- */
+  function renderHeader() {
+    var now = new Date(), hr = now.getHours();
+    $("#date").textContent = now.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+    $("#hello").textContent = hr < 18 ? "Bonjour" : "Bonsoir";
+    $("#loc-chip").textContent = "📍 " + (state.loc ? state.loc.name : "Localisation…");
+  }
+  function renderStatus() {
+    var s = "Actualisé à " + new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+    var w = state.warns.filter(function (x, i, a) { return a.indexOf(x) === i; });
+    $("#status").innerHTML = esc(s) + w.map(function (x) { return ' · <span class="w">' + esc(x) + "</span>"; }).join("");
+  }
+
+  /* ---------- actualisation ---------- */
+  function track(name, p, render, id) {
+    return p.then(function (r) {
+      state[name] = r;
+      if (r.stale) state.warns.push("Hors ligne : certaines données datent de " + ago(r.t) + ".");
+      render();
+    }).catch(function (e) { console.error(name, e); state[name] = null; if (id) fail(id); });
+  }
+  function renderData() {
+    [renderMoney, renderEconomy, renderNews].forEach(function (f) { try { f(); } catch (e) { console.error(f.name, e); } });
+  }
+  function refresh() {
+    if (state.busy) return;
+    state.busy = true; state.warns = [];
+    $("#btn-refresh").classList.add("spin");
+    resolveLocation().then(function (loc) {
+      state.loc = loc; renderHeader();
+      var tasks = [
+        track("weather", loadWeather(loc), renderWeather, "s-weather"),
+        track("aq", loadAir(loc), function () { if (state.weather) renderWeather(); }),
+        track("stations", loadStations(loc), renderFuel, "s-fuel"),
+        track("data", loadData(), renderData, null),
+        track("btc", loadBtc(), function () { if (state.data) renderMoney(); })
+      ];
+      return Promise.all(tasks);
+    }).then(function () {
+      if (!state.data) { fail("s-money"); fail("s-economy"); fail("s-news"); }
+      renderHighlights(); renderStatus();
+      var g = state.data && state.data.data.generated;
+      $("#foot").textContent = "Données publiques : Open-Meteo, data.economie.gouv.fr, BCE, Eurostat, gold-api, franceinfo, Le Monde." + (g ? " Générées " + ago(Date.parse(g)) + "." : "");
+    }).catch(function () { renderStatus(); }).then(function () {
+      state.busy = false; state.last = Date.now();
+      $("#btn-refresh").classList.remove("spin");
+    });
+  }
+
+  /* ---------- réglages ---------- */
+  var modal = $("#modal");
+  function openSettings() {
+    $("#set-fuel").value = S.fuel; $("#set-radius").value = String(S.radius);
+    var city = S.loc && S.loc.mode === "city";
+    $("#m-gps").classList.toggle("on", !city); $("#m-city").classList.toggle("on", city);
+    $("#city-box").hidden = !city;
+    modal.hidden = false;
+  }
+  function closeSettings() { modal.hidden = true; }
+  var searchTimer = null;
+  function searchCity(q) {
+    var res = $("#city-res");
+    if (q.length < 2) { res.innerHTML = ""; return; }
+    fetchJSON("https://geo.api.gouv.fr/communes?nom=" + encodeURIComponent(q) + "&fields=nom,centre,codesPostaux,departement&boost=population&limit=6")
+      .then(function (a) {
+        res.innerHTML = a.filter(function (c) { return c.centre; }).map(function (c, i) {
+          return '<button type="button" data-i="' + i + '">' + esc(c.nom) + (c.departement ? " (" + esc(c.departement.code) + ")" : "") + "</button>";
+        }).join("");
+        res.__list = a.filter(function (c) { return c.centre; });
+      }).catch(function () { res.innerHTML = '<p class="small muted">Recherche indisponible.</p>'; });
+  }
+
+  /* ---------- événements ---------- */
+  $("#btn-refresh").addEventListener("click", refresh);
+  $("#btn-settings").addEventListener("click", openSettings);
+  $("#loc-chip").addEventListener("click", openSettings);
+  $("#m-close").addEventListener("click", function () { closeSettings(); });
+  modal.addEventListener("click", function (e) { if (e.target === modal) closeSettings(); });
+  $("#m-gps").addEventListener("click", function () {
+    S.loc = null; saveSettings(); $("#m-gps").classList.add("on"); $("#m-city").classList.remove("on"); $("#city-box").hidden = true; refresh();
+  });
+  $("#m-city").addEventListener("click", function () {
+    $("#m-city").classList.add("on"); $("#m-gps").classList.remove("on"); $("#city-box").hidden = false; $("#city-q").focus();
+  });
+  $("#city-q").addEventListener("input", function (e) {
+    clearTimeout(searchTimer); var q = e.target.value.trim();
+    searchTimer = setTimeout(function () { searchCity(q); }, 300);
+  });
+  $("#city-res").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-i]"), res = $("#city-res");
+    if (!b || !res.__list) return;
+    var c = res.__list[Number(b.getAttribute("data-i"))];
+    S.loc = { mode: "city", lat: c.centre.coordinates[1], lon: c.centre.coordinates[0], name: c.nom };
+    saveSettings(); closeSettings(); refresh();
+  });
+  $("#set-fuel").addEventListener("change", function (e) { S.fuel = e.target.value; saveSettings(); if (state.stations) renderFuel(); renderHighlights(); });
+  $("#set-radius").addEventListener("change", function (e) { S.radius = Number(e.target.value); saveSettings(); refresh(); });
+  document.addEventListener("click", function (e) {
+    var f = e.target.closest("[data-fuel]");
+    if (f) { S.fuel = f.getAttribute("data-fuel"); saveSettings(); renderFuel(); renderHighlights(); return; }
+    var c = e.target.closest("[data-cat]");
+    if (c) { state.newsCat = c.getAttribute("data-cat"); state.newsMax = 12; renderNews(); return; }
+    if (e.target.id === "news-more") { state.newsMax += 12; renderNews(); }
+  });
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible" && Date.now() - state.last > 15 * 60 * 1000) refresh();
+  });
+
+  /* ---------- démarrage ---------- */
+  function makeIcon() {
+    try {
+      var c = document.createElement("canvas"); c.width = c.height = 180;
+      var x = c.getContext("2d"), g = x.createLinearGradient(0, 0, 180, 180);
+      g.addColorStop(0, "#1d4ed8"); g.addColorStop(1, "#0ea5e9");
+      x.fillStyle = g; x.fillRect(0, 0, 180, 180);
+      x.font = "100px serif"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText("🌤️", 90, 98);
+      $("#touch-icon").href = c.toDataURL("image/png");
+    } catch (e) {}
+  }
+  makeIcon();
+  renderHeader();
+  var ios = /iphone|ipad|ipod/i.test(navigator.userAgent), standalone = window.navigator.standalone === true;
+  if (ios && !standalone && !S.hideInstall) $("#install").hidden = false;
+  $("#install-x").addEventListener("click", function () { $("#install").hidden = true; S.hideInstall = true; saveSettings(); });
+  if ("serviceWorker" in navigator) { navigator.serviceWorker.register("sw.js").catch(function () {}); }
+  refresh();
+})();
+</script>
+</body>
+</html>
