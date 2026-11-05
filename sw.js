@@ -1,6 +1,6 @@
 /* Service worker : l'application s'ouvre même sans réseau.
    Réseau d'abord pour les fichiers du site (mises à jour immédiates), cache en secours. */
-var CACHE = "pdj-v1";
+var CACHE = "pdj-v2";
 
 self.addEventListener("install", function (e) {
   e.waitUntil(
@@ -27,7 +27,7 @@ self.addEventListener("fetch", function (e) {
   var url = new URL(req.url);
   if (url.origin !== self.location.origin) return; /* API externes : cache géré par l'app */
   e.respondWith(
-    fetch(req)
+    fetch(req, { cache: "no-cache" }) /* revalider auprès du serveur : pas de version périmée du cache HTTP */
       .then(function (res) {
         var copy = res.clone();
         caches.open(CACHE).then(function (c) { c.put(req, copy); });
