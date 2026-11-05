@@ -324,8 +324,9 @@ details{margin-top:6px}summary{cursor:pointer;color:var(--acc);font-size:14px;pa
       if (!g || typeof g.lat !== "number") return;
       var p = {}, m = {}, any = false;
       Object.keys(FUELS).forEach(function (k) {
-        var v = r[FUELS[k].f];
-        if (v != null && !isNaN(Number(v))) { p[k] = Number(v); m[k] = r[FUELS[k].m] || null; any = true; }
+        var v = r[FUELS[k].f], mt = r[FUELS[k].m], tm = mt ? Date.parse(mt) : NaN;
+        if (!isNaN(tm) && Date.now() - tm > 7 * 864e5) return; /* prix périmé (> 7 jours) : ignoré */
+        if (v != null && !isNaN(Number(v))) { p[k] = Number(v); m[k] = mt || null; any = true; }
       });
       if (!any) return;
       out.push({ lat: g.lat, lon: g.lon, adr: r.adresse || "", ville: r.ville || "", cp: r.cp || "", p: p, m: m, d: km(loc.lat, loc.lon, g.lat, g.lon) });
@@ -441,7 +442,7 @@ details{margin-top:6px}summary{cursor:pointer;color:var(--acc);font-size:14px;pa
         });
       }
     }
-    html += '<p class="small muted" style="margin-top:8px">Prix déclarés par les stations (data.economie.gouv.fr), rayon ' + S.radius + " km.</p>";
+    html += '<p class="small muted" style="margin-top:8px">Prix déclarés par les stations (data.economie.gouv.fr), rayon ' + S.radius + " km. Prix non mis à jour depuis plus de 7 jours ignorés.</p>";
     box("s-fuel").innerHTML = html;
     sub("s-fuel", sr.stale ? "hors ligne · " + ago(sr.t) : "");
   }
