@@ -150,7 +150,9 @@ def eurostat_last(dataset, params, n=3):
 
 
 def inflation():
-    s = eurostat_last("prc_hicp_manr", {"geo": "FR", "coicop": "CP00", "unit": "RCH_A"})
+    # Depuis 2026 Eurostat publie l'IPCH selon la nomenclature ECOICOP v2 (jeu prc_hicp_minr,
+    # dimension coicop18). L'ancien jeu prc_hicp_manr s'arrête en décembre 2025.
+    s = eurostat_last("prc_hicp_minr", {"geo": "FR", "coicop18": "TOTAL", "unit": "RCH_A"})
     return {"value": s[-1][1], "period": s[-1][0],
             "previous": s[-2][1] if len(s) > 1 else None}
 
