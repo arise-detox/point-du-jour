@@ -87,6 +87,7 @@ details{margin-top:6px}summary{cursor:pointer;color:var(--acc);font-size:14px;pa
 .news a.it:first-of-type{border-top:0}
 .news .t{font-size:15px}.news .m{font-size:12px;color:var(--mut);margin-top:2px}
 .syn{margin:0 0 6px;padding-left:18px}.syn li{margin:0 0 6px;font-size:15px}
+.ana .y{font-size:22px;font-weight:700;color:var(--acc)}.ana .tx{font-size:16px;line-height:1.45;margin:2px 0 8px}.ana a{color:var(--acc);font-size:13.5px;margin-right:12px;text-decoration:none}
 .more{display:block;width:100%;margin-top:8px;border:0;border-radius:12px;background:var(--chip);color:var(--ink);padding:10px;font:inherit;cursor:pointer}
 .foot{font-size:12px;color:var(--mut);text-align:center;padding:6px 10px 0}
 .banner{background:var(--chip);border-radius:14px;padding:10px 12px;font-size:13.5px;margin-bottom:12px;display:flex;gap:10px;justify-content:space-between;align-items:center}
@@ -123,6 +124,7 @@ details{margin-top:6px}summary{cursor:pointer;color:var(--acc);font-size:14px;pa
   <section class="card" id="s-fuel"><h2>Carburant <small></small></h2><div class="body"><p class="muted">Chargement…</p></div></section>
   <section class="card" id="s-money"><h2>Devises, or &amp; marchés <small></small></h2><div class="body"><p class="muted">Chargement…</p></div></section>
   <section class="card" id="s-economy"><h2>Économie en France <small></small></h2><div class="body"><p class="muted">Chargement…</p></div></section>
+  <section class="card ana" id="s-anecdote"><h2>Ce jour-là <small></small></h2><div class="body"><p class="muted">Chargement…</p></div></section>
   <section class="card news" id="s-news"><h2>Actualités <small></small></h2><div class="body"><p class="muted">Chargement…</p></div></section>
   <div class="foot" id="foot"></div>
 </div>
@@ -534,6 +536,26 @@ details{margin-top:6px}summary{cursor:pointer;color:var(--acc);font-size:14px;pa
     box("s-economy").innerHTML = html;
   }
 
+  /* ---------- rendu : anecdote du jour ---------- */
+  function renderAnecdote() {
+    var sec = $("#s-anecdote"), dr = state.data, a = dr && dr.data.anecdote;
+    if (!a || !a.events || !a.events.length) { sec.style.display = "none"; return; }
+    sec.style.display = "";
+    var ev = a.events, i = (a.pick || 0) % ev.length, e = ev[i], html = "";
+    var label = new Date(a.date + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+    html += '<div class="y">' + esc(e.y) + '</div><p class="tx">' + esc(e.t.charAt(0).toUpperCase() + e.t.slice(1)) + "</p>";
+    (e.p || []).forEach(function (p) { html += '<a target="_blank" rel="noopener" href="' + esc(p.u) + '">' + esc(p.t) + " ↗</a>"; });
+    var others = ev.filter(function (x, k) { return k !== i; });
+    if (others.length) {
+      html += "<details><summary>Autres événements du " + esc(label) + "</summary>" + others.map(function (o) {
+        return '<div class="row"><span>' + esc(o.t.charAt(0).toUpperCase() + o.t.slice(1)) + '</span><span class="r">' + esc(o.y) + "</span></div>";
+      }).join("") + "</details>";
+    }
+    html += '<p class="small muted" style="margin-top:8px">Source : Wikipédia (« Ce jour-là », CC BY-SA).</p>';
+    box("s-anecdote").innerHTML = html;
+    sub("s-anecdote", label);
+  }
+
   /* ---------- rendu : actualités ---------- */
   function renderNews() {
     var dr = state.data;
@@ -611,7 +633,7 @@ details{margin-top:6px}summary{cursor:pointer;color:var(--acc);font-size:14px;pa
     }).catch(function (e) { console.error(name, e); state[name] = null; if (id) fail(id); });
   }
   function renderData() {
-    [renderMoney, renderEconomy, renderNews].forEach(function (f) { try { f(); } catch (e) { console.error(f.name, e); } });
+    [renderMoney, renderEconomy, renderAnecdote, renderNews].forEach(function (f) { try { f(); } catch (e) { console.error(f.name, e); } });
   }
   function refresh() {
     if (state.busy) return;
@@ -631,7 +653,7 @@ details{margin-top:6px}summary{cursor:pointer;color:var(--acc);font-size:14px;pa
       ]);
     });
     Promise.all(common.concat([local])).then(function () {
-      if (!state.data) { fail("s-money"); fail("s-economy"); fail("s-news"); }
+      if (!state.data) { fail("s-money"); fail("s-economy"); $("#s-anecdote").style.display = "none"; fail("s-news"); }
       renderHighlights(); renderStatus();
       var g = state.data && state.data.data.generated;
       $("#foot").textContent = "Données publiques : Open-Meteo, data.economie.gouv.fr, BCE, Eurostat, gold-api, franceinfo, Le Monde." + (g ? " Générées " + ago(Date.parse(g)) + "." : "");
