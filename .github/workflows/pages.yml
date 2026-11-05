@@ -46,7 +46,7 @@ jobs:
       - name: Préparer le site
         run: |
           mkdir _site
-          cp index.html sw.js _site/
+          cp index.html sw.js agenda.js _site/
           cp -r data _site/data
 
       - uses: actions/configure-pages@v5
