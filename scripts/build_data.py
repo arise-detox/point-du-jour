@@ -202,8 +202,19 @@ def fx_block(rates):
     return out
 
 
+STOOQ_UP = [True]
+
+
 def stooq(symbol, n=45):
-    r = get("https://stooq.com/q/d/l/", params={"s": symbol, "i": "d"})
+    # Stooq est parfois injoignable : une seule tentative courte, puis on n'insiste plus (le build reste rapide).
+    if not STOOQ_UP[0]:
+        raise RuntimeError("Stooq indisponible")
+    try:
+        r = requests.get("https://stooq.com/q/d/l/", params={"s": symbol, "i": "d"}, timeout=8, headers=HEADERS)
+        r.raise_for_status()
+    except Exception:
+        STOOQ_UP[0] = False
+        raise
     if not r.text.startswith("Date"):
         raise RuntimeError("réponse Stooq inattendue")
     rows = list(csv.DictReader(io.StringIO(r.text)))
