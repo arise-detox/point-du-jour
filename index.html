@@ -190,6 +190,14 @@ details{margin-top:6px}summary{cursor:pointer;color:var(--acc);font-size:14px;pa
     var a = Math.sin(dp / 2) * Math.sin(dp / 2) + Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.sin(dl / 2) * Math.sin(dl / 2);
     return 6371 * 2 * Math.asin(Math.sqrt(a));
   }
+  /* Date du jour à Paris (AAAA-MM-JJ) : c'est elle qui décide de l'événement « Ce jour-là » */
+  function parisDay() {
+    return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  }
+  function dayOfYear(iso) {
+    var p = iso.split("-");
+    return Math.round((Date.UTC(+p[0], +p[1] - 1, +p[2]) - Date.UTC(+p[0], 0, 0)) / 864e5);
+  }
   function box(id) { return $("#" + id + " .body"); }
   function sub(id, text) { var s = $("#" + id + " h2 small"); if (s) s.textContent = text || ""; }
   function fail(id) { box(id).innerHTML = '<p class="muted">Indisponible pour le moment.</p>'; }
@@ -336,6 +344,38 @@ details{margin-top:6px}summary{cursor:pointer;color:var(--acc);font-size:14px;pa
     return out;
   }
   function loadData() { return withCache("data", function () { return fetchJSON("data/data.json", { cache: "no-cache" }); }); }
+
+  /* « Ce jour-là » : le fichier du serveur n'est utilisé que s'il date d'aujourd'hui (Paris).
+     Sinon (génération en retard, appli restée ouverte après minuit), l'appli interroge Wikipédia elle-même. */
+  function parseAnecdote(j, day) {
+    var events = [];
+    (j.selected || []).forEach(function (e) {
+      var text = (e.text || "").trim();
+      if (!text) return;
+      var pages = [];
+      (e.pages || []).slice(0, 2).forEach(function (p) {
+        var url = p.content_urls && p.content_urls.desktop && p.content_urls.desktop.page;
+        var title = (p.titles && p.titles.normalized) || p.title;
+        if (url && title) pages.push({ t: title, u: url });
+      });
+      events.push({ y: e.year, t: text, p: pages });
+    });
+    if (!events.length) throw new Error("aucun événement");
+    events.sort(function (a, b) { return (b.y || 0) - (a.y || 0); });
+    events = events.slice(0, 8);
+    return { date: day, events: events, pick: dayOfYear(day) % events.length };
+  }
+  function ensureAnecdote() {
+    var day = parisDay(), srv = state.data && state.data.data && state.data.data.anecdote;
+    if (srv && srv.date === day && srv.events && srv.events.length) { state.ana = null; state.anaDone = true; renderAnecdote(); return; }
+    var c = cacheGet("ana");
+    if (c && c.d && c.d.date === day) { state.ana = c.d; state.anaDone = true; renderAnecdote(); return; }
+    var p = day.split("-");
+    fetchJSON("https://api.wikimedia.org/feed/v1/wikipedia/fr/onthisday/selected/" + p[1] + "/" + p[2])
+      .then(function (j) { var a = parseAnecdote(j, day); cacheSet("ana", a); state.ana = a; })
+      .catch(function (e) { console.error("anecdote", e); })
+      .then(function () { state.anaDone = true; renderAnecdote(); });
+  }
   function loadBtc() {
     return withCache("btc", function () {
       return fetchJSON("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur&include_24hr_change=true")
@@ -538,7 +578,10 @@ details{margin-top:6px}summary{cursor:pointer;color:var(--acc);font-size:14px;pa
 
   /* ---------- rendu : anecdote du jour ---------- */
   function renderAnecdote() {
-    var sec = $("#s-anecdote"), dr = state.data, a = dr && dr.data.anecdote;
+    var sec = $("#s-anecdote"), dr = state.data, srv = dr && dr.data.anecdote, today = parisDay();
+    var a = state.ana || (srv && srv.date === today ? srv : null);
+    if (!a && !state.anaDone) return;                 /* recherche de l'événement du jour en cours */
+    if (!a) a = srv;                                  /* repli : dernier événement connu, avec sa date affichée */
     if (!a || !a.events || !a.events.length) { sec.style.display = "none"; return; }
     sec.style.display = "";
     var ev = a.events, i = (a.pick || 0) % ev.length, e = ev[i], html = "";
@@ -637,11 +680,11 @@ details{margin-top:6px}summary{cursor:pointer;color:var(--acc);font-size:14px;pa
   }
   function refresh() {
     if (state.busy) return;
-    state.busy = true; state.warns = [];
+    state.busy = true; state.warns = []; state.anaDone = false; state.ana = null;
     $("#btn-refresh").classList.add("spin");
     /* actualités, marchés, économie : indépendants de la position, affichés sans attendre le GPS */
     var common = [
-      track("data", loadData(), renderData, null),
+      track("data", loadData(), function () { renderData(); ensureAnecdote(); }, null),
       track("btc", loadBtc(), function () { if (state.data) renderMoney(); })
     ];
     var local = resolveLocation().then(function (loc) {
@@ -653,12 +696,12 @@ details{margin-top:6px}summary{cursor:pointer;color:var(--acc);font-size:14px;pa
       ]);
     });
     Promise.all(common.concat([local])).then(function () {
-      if (!state.data) { fail("s-money"); fail("s-economy"); $("#s-anecdote").style.display = "none"; fail("s-news"); }
+      if (!state.data) { fail("s-money"); fail("s-economy"); fail("s-news"); ensureAnecdote(); }
       renderHighlights(); renderStatus();
       var g = state.data && state.data.data.generated;
       $("#foot").textContent = "Données publiques : Open-Meteo, data.economie.gouv.fr, BCE, Eurostat, gold-api, franceinfo, Le Monde." + (g ? " Générées " + ago(Date.parse(g)) + "." : "");
     }).catch(function () { renderStatus(); }).then(function () {
-      state.busy = false; state.last = Date.now();
+      state.busy = false; state.last = Date.now(); state.day = parisDay();
       $("#btn-refresh").classList.remove("spin");
     });
   }
@@ -719,7 +762,7 @@ details{margin-top:6px}summary{cursor:pointer;color:var(--acc);font-size:14px;pa
     if (e.target.id === "news-more") { state.newsMax += 12; renderNews(); }
   });
   document.addEventListener("visibilitychange", function () {
-    if (document.visibilityState === "visible" && Date.now() - state.last > 15 * 60 * 1000) refresh();
+    if (document.visibilityState === "visible" && (Date.now() - state.last > 15 * 60 * 1000 || (state.day && state.day !== parisDay()))) refresh();
   });
 
   /* ---------- démarrage ---------- */

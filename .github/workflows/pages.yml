@@ -2,10 +2,9 @@ name: Point du jour
 
 on:
   schedule:
-    # 04:30, 10:30 et 16:30 UTC = 05:30/06:30, 11:30/12:30 et 17:30/18:30 à Paris
-    - cron: "30 4 * * *"
-    - cron: "30 10 * * *"
-    - cron: "30 16 * * *"
+    # Toutes les 2 heures (minute 17). GitHub retarde ou saute parfois des exécutions planifiées :
+    # plus il y en a, moins les données (actualités, change, anecdote) vieillissent.
+    - cron: "17 */2 * * *"
   push:
     branches: [main]
   workflow_dispatch:
