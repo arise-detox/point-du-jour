@@ -1,6 +1,6 @@
 /* Service worker : l'application s'ouvre même sans réseau.
    Réseau d'abord pour les fichiers du site (mises à jour immédiates), cache en secours. */
-var CACHE = "pdj-v2";
+var CACHE = "pdj-v3";
 
 self.addEventListener("install", function (e) {
   e.waitUntil(

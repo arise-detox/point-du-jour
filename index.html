@@ -243,7 +243,8 @@ details{margin-top:6px}summary{cursor:pointer;color:var(--acc);font-size:14px;pa
     JPY: { n: "Yen", s: "¥", dec: 2, flag: "🇯🇵", unit: 100 },
     THB: { n: "Baht", s: "฿", dec: 2, flag: "🇹🇭", unit: 100 },
     GBP: { n: "Livre sterling", s: "£", dec: 4, flag: "🇬🇧", unit: 1 },
-    CHF: { n: "Franc suisse", s: "CHF", dec: 4, flag: "🇨🇭", unit: 1 }
+    CHF: { n: "Franc suisse", s: "CHF", dec: 4, flag: "🇨🇭", unit: 1 },
+    GEL: { n: "Lari géorgien", s: "₾", dec: 3, flag: "🇬🇪", unit: 1 }
   };
   var WMO = {
     0: ["☀️", "Ciel dégagé", "🌙"], 1: ["🌤️", "Plutôt dégagé", "🌙"], 2: ["⛅", "Partiellement nuageux", "☁️"], 3: ["☁️", "Couvert"],
@@ -503,13 +504,14 @@ details{margin-top:6px}summary{cursor:pointer;color:var(--acc);font-size:14px;pa
     var d = dr.data, html = "", fx = d.fx;
     if (fx && fx.rates) {
       html += "<h3>Devises (taux BCE du " + esc(new Date(fx.date + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long" })) + ")</h3>";
-      var main = ["USD", "JPY", "THB"], other = ["GBP", "CHF"];
+      var main = ["USD", "JPY", "THB"], other = ["GBP", "CHF", "GEL"];
       html += main.map(function (k) { return fxRow(k, fx.rates[k]); }).join("");
       var r = fx.rates;
       if (r.USD && r.JPY && r.THB) {
         html += '<p class="small muted" style="margin-top:6px">1 $ = ' + num(r.JPY.last / r.USD.last, 2) + " ¥ · " + num(r.THB.last / r.USD.last, 2) + " ฿ · ▲ = l'euro gagne en valeur</p>";
       }
-      html += "<details><summary>Autres devises</summary>" + other.map(function (k) { return fxRow(k, fx.rates[k]); }).join("") + "</details>";
+      html += "<details><summary>Autres devises</summary>" + other.map(function (k) { return fxRow(k, fx.rates[k]); }).join("") +
+        (fx.rates.GEL ? '<p class="small muted" style="margin-top:6px">Lari : taux officiel de la Banque nationale de Géorgie.</p>' : "") + "</details>";
       html += '<h3>Convertisseur</h3><div class="conv"><input id="cv-amt" type="number" inputmode="decimal" value="100" aria-label="Montant"><select id="cv-cur" aria-label="Devise">' +
         '<option value="EUR">€ Euro</option><option value="USD">$ Dollar</option><option value="JPY">¥ Yen</option><option value="THB">฿ Baht</option></select></div><div class="cvout" id="cv-out"></div>';
     }

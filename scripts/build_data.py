@@ -2,8 +2,8 @@
 """Génère data/data.json pour l'application « Point du jour ».
 
 Sources publiques uniquement (aucune donnée personnelle) : flux RSS,
-Eurostat, BCE, Frankfurter (taux BCE), gold-api.com, Stooq,
-calendrier.api.gouv.fr. Synthèse de l'actualité par l'API Claude (facultative).
+Eurostat, BCE, Frankfurter (taux BCE), Banque nationale de Géorgie (lari),
+gold-api.com, Stooq, calendrier.api.gouv.fr. Synthèse de l'actualité par l'API Claude (facultative).
 Chaque bloc est indépendant : si une source tombe, les autres restent publiés.
 """
 import csv
@@ -202,6 +202,55 @@ def fx_block(rates):
     return out
 
 
+NBG = "https://nbg.gov.ge/gw/api/ct/monetarypolicy/currencies/en/json"
+
+
+def nbg_eur(day=None):
+    """Taux officiel de la Banque nationale de Géorgie : 1 € = x lari.
+    Retourne (taux, variation depuis la publication précédente ou None, date)."""
+    params = {"currencies": "EUR"}
+    if day:
+        params["date"] = day
+    j = get(NBG, params=params).json()
+    block = j[0] if isinstance(j, list) else j
+    c = next(c for c in block["currencies"] if c.get("code") == "EUR")
+    qty = float(c.get("quantity") or 1)
+    diff = c.get("diff")
+    return (float(c["rate"]) / qty,
+            float(diff) / qty if isinstance(diff, (int, float)) else None,
+            str(block.get("date") or "")[:10])
+
+
+def gel_rates(hist):
+    """Lari géorgien (absent des taux BCE) : même forme que fx_block, courbe de 30 jours.
+    Les jours déjà connus sont gardés dans history.json ; seuls les jours manquants sont demandés."""
+    last, diff, day = nbg_eur()
+    day = day or date.today().isoformat()
+    store = {d: v["eurgel"] for d, v in hist.items() if isinstance(v, dict) and v.get("eurgel")}
+    store[day] = last
+    fails = asked = 0
+    for i in range(1, 33):
+        d = (date.fromisoformat(day) - timedelta(days=i)).isoformat()
+        if d in store:
+            continue
+        if fails >= 2 or asked >= 40:
+            break
+        asked += 1
+        try:
+            store[d] = nbg_eur(d)[0]
+            fails = 0
+        except Exception:
+            fails += 1
+    for d, v in store.items():
+        hist.setdefault(d, {})["eurgel"] = v
+    series = [store[d] for d in sorted(store)][-32:]
+    prev = last - diff if diff is not None else (series[-2] if len(series) >= 2 else last)
+    if len(series) < 2:
+        series = [prev, last]
+    log(f"[lari] 1 € = {last:.4f} GEL ({day}, {len(series)} points)")
+    return {"last": last, "prev": prev, "series": series}
+
+
 STOOQ_UP = [True]
 
 
@@ -307,6 +356,10 @@ def main():
     rates = safe("change", fx_raw)
     data["fx"] = safe("change", fx_block, rates) if rates else None
     data["gold"] = safe("métaux", metals, rates, hist) if rates else None
+    if data["fx"]:
+        gel = safe("lari", gel_rates, hist)
+        if gel:
+            data["fx"]["rates"]["GEL"] = gel
     data["markets"] = {"cac": safe("CAC 40", market, "^cac"),
                        "brent": safe("Brent", market, "cb.f")}
 

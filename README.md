@@ -4,7 +4,7 @@ Application web (installable sur l'écran d'accueil de l'iPhone) qui affiche cha
 
 - **Météo** : maintenant, 24 h, 7 jours, UV, qualité de l'air, pollens, risque de pluie
 - **Carburant** : stations les moins chères et les plus proches de votre position (SP95, E10, SP98, gazole, GPL, E85), économie sur un plein, itinéraire Plans
-- **Devises** : euro contre dollar, yen, baht (+ livre, franc suisse), courbes 30 jours, convertisseur
+- **Devises** : euro contre dollar, yen, baht (+ livre, franc suisse, lari géorgien), courbes 30 jours, convertisseur
 - **Or et argent**, **CAC 40**, **Brent**, **Bitcoin**
 - **Économie en France** : inflation, chômage, taux BCE, prochains jours fériés
 - **Actualités** : franceinfo et Le Monde, avec une synthèse rédigée par Claude (facultative)
@@ -33,5 +33,5 @@ interrogés directement par votre téléphone (Open-Meteo, data.economie.gouv.fr
 
 ## Sources
 
-Open-Meteo, data.economie.gouv.fr (prix des carburants), geo.api.gouv.fr, Eurostat, BCE, Frankfurter (taux BCE),
+Open-Meteo, data.economie.gouv.fr (prix des carburants), geo.api.gouv.fr, Eurostat, BCE, Frankfurter (taux BCE), Banque nationale de Géorgie (lari),
 gold-api.com, Stooq, CoinGecko, calendrier.api.gouv.fr, flux RSS de franceinfo et du Monde.
